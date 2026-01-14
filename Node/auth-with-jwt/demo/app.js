@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
+import { authMiddleware } from "./auth.middleware.js";
+
 const app = express();
 app.use(express.json());
 
@@ -38,6 +40,13 @@ app.post("/login", async (req, res) => {
   });
 
   return res.json({ token });
+});
+
+app.get("/protected", authMiddleware, (req, res) => {
+  res.json({
+    message: "Access granted",
+    userId: req.userId,
+  });
 });
 
 app.listen(3000, () => {
