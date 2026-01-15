@@ -35,11 +35,38 @@ app.post("/login", async (req, res) => {
   if (!passwordMatch)
     return res.status(401).json({ error: "Invalid credentials." });
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
+  const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    expiresIn: "1m",
   });
 
-  return res.json({ token });
+  const refreshToken = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return res.status(200).json({ accessToken, refreshToken });
+});
+
+app.post("/refresh", (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken)
+    return res.status(401).json({ error: "Refresh token not provided." });
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    const newAccessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.JWT_SECRET,
+      { expiresIn: "1m" }
+    );
+
+    return res.status(200).json({ accessToken: newAccessToken });
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired refresh token." });
+  }
 });
 
 app.get("/protected", authMiddleware, (req, res) => {
