@@ -21,6 +21,8 @@ const usersFromDB = [
   },
 ];
 
+const refreshTokensDB = [];
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -42,8 +44,10 @@ app.post("/login", async (req, res) => {
   const refreshToken = jwt.sign(
     { userId: user.id },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "3m" }
   );
+
+  refreshTokensDB.push(refreshToken);
 
   return res.status(200).json({ accessToken, refreshToken });
 });
@@ -52,10 +56,19 @@ app.post("/refresh", (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken)
-    return res.status(401).json({ error: "Refresh token not provided." });
+    return res.status(401).json({ error: "Refresh token not sent." });
+
+  const exists = refreshTokensDB.find((token) => token === refreshToken);
+
+  if (!exists)
+    return res.status(401).json({ error: "Refresh token does not exists." });
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    const oldRefreshTokenIndex = refreshTokensDB.findIndex(
+      (token) => token === refreshToken
+    );
 
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
@@ -63,7 +76,17 @@ app.post("/refresh", (req, res) => {
       { expiresIn: "1m" }
     );
 
-    return res.status(200).json({ accessToken: newAccessToken });
+    const newRefreshToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "3m" }
+    );
+
+    refreshTokensDB[oldRefreshTokenIndex] = newRefreshToken;
+
+    return res
+      .status(200)
+      .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired refresh token." });
   }
