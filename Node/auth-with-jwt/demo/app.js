@@ -99,6 +99,28 @@ app.get("/protected", authMiddleware, (req, res) => {
   });
 });
 
+app.delete("/logout", async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken)
+    return res.status(400).json({ error: "Refresh token not sent." });
+
+  try {
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    const indexToken = refreshTokensDB.findIndex(
+      (token) => token === refreshToken
+    );
+    if (indexToken === -1)
+      return res.status(401).json({ error: "Token does not exists." });
+
+    refreshTokensDB.splice(indexToken, 1);
+
+    return res.status(200).json({ message: "Logout realizado com sucesso!" });
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired refresh token." });
+  }
+});
+
 app.listen(3000, () => {
   console.log("Server running!");
 });
