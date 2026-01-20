@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 
-import { authMiddleware } from "./auth.middleware.js";
+import { authMiddleware } from "./middlewares/auth.middleware.js";
 
-import { pool } from "./connection.js";
+import { pool } from "./database/connection.js";
 
 const app = express();
 app.use(express.json());
@@ -46,7 +46,7 @@ app.post("/login", async (req, res) => {
   const refreshToken = jwt.sign(
     { userId: user.id },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "3m" }
+    { expiresIn: "3m" },
   );
 
   refreshTokensDB.push(refreshToken);
@@ -69,19 +69,19 @@ app.post("/refresh", (req, res) => {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const oldRefreshTokenIndex = refreshTokensDB.findIndex(
-      (token) => token === refreshToken
+      (token) => token === refreshToken,
     );
 
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "1m" },
     );
 
     const newRefreshToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "3m" }
+      { expiresIn: "3m" },
     );
 
     refreshTokensDB[oldRefreshTokenIndex] = newRefreshToken;
@@ -110,7 +110,7 @@ app.delete("/logout", async (req, res) => {
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const indexToken = refreshTokensDB.findIndex(
-      (token) => token === refreshToken
+      (token) => token === refreshToken,
     );
     if (indexToken === -1)
       return res.status(401).json({ error: "Token does not exists." });
