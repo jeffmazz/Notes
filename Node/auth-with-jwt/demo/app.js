@@ -5,6 +5,8 @@ import "dotenv/config";
 
 import { authMiddleware } from "./auth.middleware.js";
 
+import { pool } from "./connection.js";
+
 const app = express();
 app.use(express.json());
 
