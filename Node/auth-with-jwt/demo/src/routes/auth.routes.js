@@ -1,14 +1,10 @@
-import express from "express";
+import { Router } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 
-import { authMiddleware } from "./auth.middleware.js";
-
-import { pool } from "./connection.js";
-
-const app = express();
-app.use(express.json());
+const router = Router();
 
 const usersFromDB = [
   {
@@ -25,7 +21,7 @@ const usersFromDB = [
 
 const refreshTokensDB = [];
 
-app.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password)
@@ -46,7 +42,7 @@ app.post("/login", async (req, res) => {
   const refreshToken = jwt.sign(
     { userId: user.id },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "3m" }
+    { expiresIn: "3m" },
   );
 
   refreshTokensDB.push(refreshToken);
@@ -54,7 +50,7 @@ app.post("/login", async (req, res) => {
   return res.status(200).json({ accessToken, refreshToken });
 });
 
-app.post("/refresh", (req, res) => {
+router.post("/refresh", (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken)
@@ -69,19 +65,19 @@ app.post("/refresh", (req, res) => {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const oldRefreshTokenIndex = refreshTokensDB.findIndex(
-      (token) => token === refreshToken
+      (token) => token === refreshToken,
     );
 
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "1m" },
     );
 
     const newRefreshToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "3m" }
+      { expiresIn: "3m" },
     );
 
     refreshTokensDB[oldRefreshTokenIndex] = newRefreshToken;
@@ -94,14 +90,14 @@ app.post("/refresh", (req, res) => {
   }
 });
 
-app.get("/protected", authMiddleware, (req, res) => {
+router.get("/protected", authMiddleware, (req, res) => {
   res.json({
     message: "Access granted",
     userId: req.userId,
   });
 });
 
-app.delete("/logout", async (req, res) => {
+router.delete("/logout", async (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken)
     return res.status(400).json({ error: "Refresh token not sent." });
@@ -110,7 +106,7 @@ app.delete("/logout", async (req, res) => {
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
     const indexToken = refreshTokensDB.findIndex(
-      (token) => token === refreshToken
+      (token) => token === refreshToken,
     );
     if (indexToken === -1)
       return res.status(401).json({ error: "Token does not exists." });
@@ -123,6 +119,4 @@ app.delete("/logout", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running!");
-});
+export default router;
