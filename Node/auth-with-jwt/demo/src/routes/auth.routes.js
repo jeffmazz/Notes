@@ -4,22 +4,15 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
+import { findUserByEmail } from "../repositories/user.repository.js";
+import {
+  saveRefreshToken,
+  findRefreshToken,
+  updateRefreshToken,
+  deleteRefreshToken,
+} from "../repositories/refreshToken.repository.js";
+
 const router = Router();
-
-const usersFromDB = [
-  {
-    id: 1,
-    email: "teste@email.com",
-    password: await bcrypt.hash("123456", 10),
-  },
-  {
-    id: 2,
-    email: "admin@email.com",
-    password: await bcrypt.hash("admin123", 10),
-  },
-];
-
-const refreshTokensDB = [];
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -27,7 +20,7 @@ router.post("/login", async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ error: "Email or password were not sent." });
 
-  const user = usersFromDB.find((u) => u.email === email);
+  const user = await findUserByEmail(email);
   if (!user) return res.status(401).json({ error: "Invalid credentials." });
 
   const passwordMatch = await bcrypt.compare(password, user.password);
@@ -45,28 +38,24 @@ router.post("/login", async (req, res) => {
     { expiresIn: "3m" },
   );
 
-  refreshTokensDB.push(refreshToken);
+  await saveRefreshToken(refreshToken, user.id);
 
   return res.status(200).json({ accessToken, refreshToken });
 });
 
-router.post("/refresh", (req, res) => {
+router.post("/refresh", async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken)
     return res.status(401).json({ error: "Refresh token not sent." });
 
-  const exists = refreshTokensDB.find((token) => token === refreshToken);
+  const storedToken = await findRefreshToken(refreshToken);
 
-  if (!exists)
+  if (!storedToken)
     return res.status(401).json({ error: "Refresh token does not exists." });
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-
-    const oldRefreshTokenIndex = refreshTokensDB.findIndex(
-      (token) => token === refreshToken,
-    );
 
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
@@ -80,7 +69,7 @@ router.post("/refresh", (req, res) => {
       { expiresIn: "3m" },
     );
 
-    refreshTokensDB[oldRefreshTokenIndex] = newRefreshToken;
+    await updateRefreshToken(storedToken.id, newRefreshToken);
 
     return res
       .status(200)
@@ -103,15 +92,10 @@ router.delete("/logout", async (req, res) => {
     return res.status(400).json({ error: "Refresh token not sent." });
 
   try {
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const deleted = await deleteRefreshToken(refreshToken);
 
-    const indexToken = refreshTokensDB.findIndex(
-      (token) => token === refreshToken,
-    );
-    if (indexToken === -1)
+    if (!deleted)
       return res.status(401).json({ error: "Token does not exists." });
-
-    refreshTokensDB.splice(indexToken, 1);
 
     return res.status(200).json({ message: "Logout realizado com sucesso!" });
   } catch (err) {
