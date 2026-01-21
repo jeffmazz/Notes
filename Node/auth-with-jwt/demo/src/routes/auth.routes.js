@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
+import { pool } from "../database/connection.js";
+
 import { findUserByEmail } from "../repositories/user.repository.js";
 import {
   saveRefreshToken,
@@ -13,6 +15,28 @@ import {
 } from "../repositories/refreshToken.repository.js";
 
 const router = Router();
+
+router.post("/register", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password are required." });
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await pool.execute("INSERT INTO users (email, password) VALUES (?, ?)", [
+      email,
+      hashedPassword,
+    ]);
+
+    return res.status(201).json({ message: "User created successfully!" });
+  } catch (err) {
+    if (err.code === "ER_DUP_ENTRY")
+      return res.status(409).json({ error: "Email already exists." });
+
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
