@@ -3,6 +3,9 @@ const emailField = document.getElementById("emailField");
 const passwordField = document.getElementById("passwordField");
 const output = document.getElementById("output");
 
+let accessToken = null;
+let refreshToken = null;
+
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -23,10 +26,14 @@ loginForm.addEventListener("submit", async (e) => {
   });
 
   if (!response.ok) {
-    output.innerText = "Invalid credentials.";
+    const err = await response.json();
+    output.innerText = err.error;
     return;
   }
   const data = await response.json();
 
-  output.innerText = JSON.stringify(data, null, 2);
+  accessToken = data.accessToken;
+  refreshToken = data.refreshToken;
+
+  output.innerText = "Login successful! Tokens stored.";
 });
