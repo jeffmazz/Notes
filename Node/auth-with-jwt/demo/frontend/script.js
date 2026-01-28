@@ -131,5 +131,5 @@ btnLogout.addEventListener("click", async () => {
   accessToken = null;
   refreshToken = null;
 
-  output.innerText = "logged out successfullu!";
+  output.innerText = "logged out successfully!";
 });
