@@ -49,6 +49,11 @@ btnProtected.addEventListener("click", async () => {
     },
   });
 
+  if (response.status === 401) {
+    output.innerText = "Access token expired! Need refresh...";
+    return;
+  }
+
   const data = await response.json();
 
   output.innerText = JSON.stringify(data, null, 2);
