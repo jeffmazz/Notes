@@ -39,6 +39,35 @@ loginForm.addEventListener("submit", async (e) => {
   output.innerText = "Login successful! Tokens stored.";
 });
 
+const refreshAccessToken = async () => {
+  output.innerText = "Refreshing token...";
+
+  const response = await fetch("http://localhost:3000/refresh", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refreshToken: refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    output.innerText = "Refresh failed. Please login again.";
+    return false;
+  }
+
+  const data = await response.json();
+
+  console.log("Refresh Response: ", data);
+
+  accessToken = data.accessToken;
+  refreshToken = data.refreshToken;
+
+  output.innerText = "Token refreshed!";
+  return true;
+};
+
 btnProtected.addEventListener("click", async () => {
   output.innerText = "accessing protected route...";
 
@@ -50,7 +79,28 @@ btnProtected.addEventListener("click", async () => {
   });
 
   if (response.status === 401) {
-    output.innerText = "Access token expired! Need refresh...";
+    console.log("Old Access: ", accessToken);
+    console.log("Old Refresh: ", refreshToken);
+
+    const refreshed = await refreshAccessToken();
+
+    console.log("Refreshed? ", refreshed);
+
+    if (!refreshed) return;
+
+    console.log("New Access: ", accessToken);
+    console.log("New Refresh: ", refreshToken);
+
+    const retryResponse = await fetch("http://localhost:3000/protected", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const retryData = await retryResponse.json();
+    output.innerText = JSON.stringify(retryData, null, 2);
+
     return;
   }
 
