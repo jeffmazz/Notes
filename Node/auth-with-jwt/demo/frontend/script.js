@@ -3,6 +3,7 @@ const emailField = document.getElementById("emailField");
 const passwordField = document.getElementById("passwordField");
 const output = document.getElementById("output");
 const btnProtected = document.getElementById("btnProtected");
+const btnLogout = document.getElementById("btnLogout");
 
 let accessToken = null;
 let refreshToken = null;
