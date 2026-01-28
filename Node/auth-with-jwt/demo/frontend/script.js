@@ -109,3 +109,27 @@ btnProtected.addEventListener("click", async () => {
 
   output.innerText = JSON.stringify(data, null, 2);
 });
+
+btnLogout.addEventListener("click", async () => {
+  output.innerText = "Loggint out...";
+
+  const response = await fetch("http://localhost:3000/logout", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refreshToken: refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    output.innerText = "Logout failed.";
+    return;
+  }
+
+  accessToken = null;
+  refreshToken = null;
+
+  output.innerText = "logged out successfullu!";
+});
