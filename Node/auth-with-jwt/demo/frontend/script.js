@@ -2,6 +2,8 @@ const loginForm = document.getElementById("loginForm");
 const emailField = document.getElementById("emailField");
 const passwordField = document.getElementById("passwordField");
 const output = document.getElementById("output");
+const btnProtected = document.getElementById("btnProtected");
+const btnLogout = document.getElementById("btnLogout");
 
 let accessToken = null;
 let refreshToken = null;
@@ -36,4 +38,98 @@ loginForm.addEventListener("submit", async (e) => {
   refreshToken = data.refreshToken;
 
   output.innerText = "Login successful! Tokens stored.";
+});
+
+const refreshAccessToken = async () => {
+  output.innerText = "Refreshing token...";
+
+  const response = await fetch("http://localhost:3000/refresh", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refreshToken: refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    output.innerText = "Refresh failed. Please login again.";
+    return false;
+  }
+
+  const data = await response.json();
+
+  console.log("Refresh Response: ", data);
+
+  accessToken = data.accessToken;
+  refreshToken = data.refreshToken;
+
+  output.innerText = "Token refreshed!";
+  return true;
+};
+
+btnProtected.addEventListener("click", async () => {
+  output.innerText = "accessing protected route...";
+
+  const response = await fetch("http://localhost:3000/protected", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (response.status === 401) {
+    console.log("Old Access: ", accessToken);
+    console.log("Old Refresh: ", refreshToken);
+
+    const refreshed = await refreshAccessToken();
+
+    console.log("Refreshed? ", refreshed);
+
+    if (!refreshed) return;
+
+    console.log("New Access: ", accessToken);
+    console.log("New Refresh: ", refreshToken);
+
+    const retryResponse = await fetch("http://localhost:3000/protected", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const retryData = await retryResponse.json();
+    output.innerText = JSON.stringify(retryData, null, 2);
+
+    return;
+  }
+
+  const data = await response.json();
+
+  output.innerText = JSON.stringify(data, null, 2);
+});
+
+btnLogout.addEventListener("click", async () => {
+  output.innerText = "Loggint out...";
+
+  const response = await fetch("http://localhost:3000/logout", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refreshToken: refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    output.innerText = "Logout failed.";
+    return;
+  }
+
+  accessToken = null;
+  refreshToken = null;
+
+  output.innerText = "logged out successfully!";
 });
