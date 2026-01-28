@@ -2,6 +2,7 @@ const loginForm = document.getElementById("loginForm");
 const emailField = document.getElementById("emailField");
 const passwordField = document.getElementById("passwordField");
 const output = document.getElementById("output");
+const btnProtected = document.getElementById("btnProtected");
 
 let accessToken = null;
 let refreshToken = null;
@@ -36,4 +37,19 @@ loginForm.addEventListener("submit", async (e) => {
   refreshToken = data.refreshToken;
 
   output.innerText = "Login successful! Tokens stored.";
+});
+
+btnProtected.addEventListener("click", async () => {
+  output.innerText = "accessing protected route...";
+
+  const response = await fetch("http://localhost:3000/protected", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const data = await response.json();
+
+  output.innerText = JSON.stringify(data, null, 2);
 });
