@@ -6,7 +6,6 @@ const btnProtected = document.getElementById("btnProtected");
 const btnLogout = document.getElementById("btnLogout");
 
 let accessToken = null;
-let refreshToken = null;
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -18,6 +17,7 @@ loginForm.addEventListener("submit", async (e) => {
 
   const response = await fetch("http://localhost:3000/login", {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -35,7 +35,6 @@ loginForm.addEventListener("submit", async (e) => {
   const data = await response.json();
 
   accessToken = data.accessToken;
-  refreshToken = data.refreshToken;
 
   output.innerText = "Login successful! Tokens stored.";
 });
@@ -45,12 +44,10 @@ const refreshAccessToken = async () => {
 
   const response = await fetch("http://localhost:3000/refresh", {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      refreshToken: refreshToken,
-    }),
   });
 
   if (!response.ok) {
@@ -63,7 +60,6 @@ const refreshAccessToken = async () => {
   console.log("Refresh Response: ", data);
 
   accessToken = data.accessToken;
-  refreshToken = data.refreshToken;
 
   output.innerText = "Token refreshed!";
   return true;
@@ -80,9 +76,6 @@ btnProtected.addEventListener("click", async () => {
   });
 
   if (response.status === 401) {
-    console.log("Old Access: ", accessToken);
-    console.log("Old Refresh: ", refreshToken);
-
     const refreshed = await refreshAccessToken();
 
     console.log("Refreshed? ", refreshed);
@@ -90,7 +83,6 @@ btnProtected.addEventListener("click", async () => {
     if (!refreshed) return;
 
     console.log("New Access: ", accessToken);
-    console.log("New Refresh: ", refreshToken);
 
     const retryResponse = await fetch("http://localhost:3000/protected", {
       method: "GET",

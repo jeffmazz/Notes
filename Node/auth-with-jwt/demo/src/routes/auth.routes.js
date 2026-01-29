@@ -64,11 +64,19 @@ router.post("/login", async (req, res) => {
 
   await saveRefreshToken(refreshToken, user.id);
 
-  return res.status(200).json({ accessToken, refreshToken });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: false,
+  });
+
+  return res.status(200).json({
+    accessToken,
+  });
 });
 
 router.post("/refresh", async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken)
     return res.status(401).json({ error: "Refresh token not sent." });
@@ -95,9 +103,13 @@ router.post("/refresh", async (req, res) => {
 
     await updateRefreshToken(storedToken.id, newRefreshToken);
 
-    return res
-      .status(200)
-      .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: false,
+    });
+
+    return res.status(200).json({ accessToken: newAccessToken });
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired refresh token." });
   }
