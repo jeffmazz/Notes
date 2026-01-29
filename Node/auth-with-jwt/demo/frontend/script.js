@@ -103,16 +103,11 @@ btnProtected.addEventListener("click", async () => {
 });
 
 btnLogout.addEventListener("click", async () => {
-  output.innerText = "Loggint out...";
+  output.innerText = "Logging out...";
 
   const response = await fetch("http://localhost:3000/logout", {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      refreshToken: refreshToken,
-    }),
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -121,7 +116,6 @@ btnLogout.addEventListener("click", async () => {
   }
 
   accessToken = null;
-  refreshToken = null;
 
   output.innerText = "logged out successfully!";
 });

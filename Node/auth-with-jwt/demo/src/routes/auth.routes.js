@@ -123,19 +123,23 @@ router.get("/protected", authMiddleware, (req, res) => {
 });
 
 router.delete("/logout", async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies.refreshToken;
+
   if (!refreshToken)
     return res.status(400).json({ error: "Refresh token not sent." });
 
   try {
-    const deleted = await deleteRefreshToken(refreshToken);
+    await deleteRefreshToken(refreshToken);
 
-    if (!deleted)
-      return res.status(401).json({ error: "Token does not exists." });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: false,
+    });
 
-    return res.status(200).json({ message: "Logout realizado com sucesso!" });
+    return res.status(200).json({ message: "Logged out successfully!" });
   } catch (err) {
-    return res.status(401).json({ error: "Invalid or expired refresh token." });
+    return res.status(500).json({ error: "Logout failed." });
   }
 });
 
