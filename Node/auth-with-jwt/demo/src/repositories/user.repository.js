@@ -8,3 +8,12 @@ export async function findUserByEmail(email) {
 
   return rows[0];
 }
+
+export async function findUserById(id) {
+  const [rows] = await pool.execute(
+    "SELECT id, email FROM users WHERE id = ?",
+    [id],
+  );
+
+  return rows[0];
+}
