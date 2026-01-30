@@ -16,6 +16,7 @@ import {
   findRefreshToken,
   updateRefreshToken,
   deleteRefreshToken,
+  deleteRefreshTokensByUser,
 } from "../repositories/refreshToken.repository.js";
 
 const router = Router();
@@ -66,6 +67,7 @@ router.post("/login", async (req, res) => {
     { expiresIn: "3m" },
   );
 
+  await deleteRefreshTokensByUser(user.id);
   await saveRefreshToken(refreshToken, user.id);
 
   res.cookie("refreshToken", refreshToken, {

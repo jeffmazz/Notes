@@ -31,3 +31,7 @@ export async function deleteRefreshToken(token) {
 
   return result.affectedRows;
 }
+
+export async function deleteRefreshTokensByUser(userId) {
+  await pool.execute("DELETE FROM refresh_tokens WHERE user_id = ?", [userId]);
+}
