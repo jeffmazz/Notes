@@ -6,7 +6,11 @@ import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 import { pool } from "../database/connection.js";
 
-import { findUserByEmail } from "../repositories/user.repository.js";
+import {
+  findUserByEmail,
+  findUserById,
+} from "../repositories/user.repository.js";
+
 import {
   saveRefreshToken,
   findRefreshToken,
@@ -120,6 +124,16 @@ router.get("/protected", authMiddleware, (req, res) => {
     message: "Access granted",
     userId: req.userId,
   });
+});
+
+router.get("/me", authMiddleware, async (req, res) => {
+  const userId = req.userId;
+
+  const user = await findUserById(userId);
+
+  if (!user) return res.status(404).json({ error: "User not found." });
+
+  return res.status(200).json({ id: user.id, email: user.email });
 });
 
 router.delete("/logout", async (req, res) => {
