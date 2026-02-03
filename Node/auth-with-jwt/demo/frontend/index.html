@@ -6,29 +6,33 @@
     <title>Auth with JWT</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
+
   <body>
     <h1>Auth With JWT</h1>
 
-    <p>Simple frontend to test login with jwt and tokens.</p>
+    <p>A simple interface to test JWT login and token refresh flow.</p>
 
     <div class="loginDiv">
       <form id="loginForm">
-        <input type="email" placeholder="email" id="emailField" />
+        <input type="email" placeholder="Email" id="emailField" required />
+
         <input
           type="password"
-          placeholder="type your password"
+          placeholder="Password"
           id="passwordField"
+          required
         />
-        <button>Login</button>
+
+        <button type="submit">Login</button>
       </form>
     </div>
 
     <h2>Response:</h2>
-    <pre id="output">Waiting...</pre>
+    <pre id="output" aria-live="polite">Waiting...</pre>
 
-    <button id="btnProtected">Acessar rota protegida!</button>
+    <button id="btnProtected" type="button">Access Protected Route</button>
 
-    <button id="btnLogout">Logout</button>
+    <button id="btnLogout" type="button">Logout</button>
 
     <script src="./script.js"></script>
   </body>
