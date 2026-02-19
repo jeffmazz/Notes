@@ -1,33 +1,79 @@
-## O que é JWT?
+# Secure JWT Authentication System
 
-JWT (JSON Web Token) é um padrão usado para autenticação e autorização em aplicações. Ele permite identificar um usuário de forma segura sem a necessidade de manter sessões no servidor.
+# 🔐 Secure JWT Authentication System
 
-Em aplicações Node.js, o JWT é utilizado através de bibliotecas que geram e validam tokens assinados.
+![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)
+![Express](https://img.shields.io/badge/Express.js-Backend-black?logo=express)
+![JWT](https://img.shields.io/badge/Auth-JWT-blue?logo=jsonwebtokens)
+![MySQL](https://img.shields.io/badge/Database-MySQL-orange?logo=mysql)
+![Status](https://img.shields.io/badge/status-active-success)
 
-## Para que usar JWT?
+A complete authentication system demonstrating secure JWT-based authentication using a Node.js backend API and a frontend demo client.
 
-JWT é utilizado para:
+This project showcases modern authentication practices such as short-lived access tokens, rotating refresh tokens stored in HttpOnly cookies, protected routes, and automatic session renewal.
 
-- manter a aplicação stateless
-- evitar sessões no servidor
-- identificar o usuário a cada requisição
-- proteger rotas que exigem autenticação
+---
 
-## Stateless e ausência de sessão
+## 🧩 Project Structure
 
-Em um sistema stateless, o servidor não armazena informações sobre o usuário entre requisições. Toda requisição autenticada carrega um token que contém as informações necessárias para identificar o usuário.
+```bash
+auth-with-jwt/
+└── demo/
+    ├── backend/
+    └── frontend/
+```
 
-Dessa forma, o servidor não precisa manter sessões em memória ou banco de dados.
+## ⚙️ How It Works
 
-## Tokens assinados
+1. The user logs in through the frontend demo client.
+2. The backend validates credentials and issues:
+   - a short-lived **access token**
+   - a **refresh token** stored in an HttpOnly cookie
+3. Protected requests use the access token.
+4. When the access token expires, the frontend automatically requests a new one using the refresh token.
+5. Logout revokes the session by removing the refresh token.
 
-Os tokens JWT são assinados com uma chave secreta do servidor. Essa assinatura garante que o token não foi alterado e que foi gerado pela própria aplicação.
+---
 
-Caso o token seja modificado ou forjado, a validação falha e o acesso é negado.
+## ▶️ Running the Project
 
-## JWT e bcrypt
+### 1️⃣ Start the Backend
 
-Em um fluxo de autenticação, o bcrypt é utilizado para validar a senha do usuário no momento do login, enquanto o JWT é utilizado para manter o usuário autenticado nas requisições seguintes.
+```bash
+cd demo/backend
+npm install
+node src/server.js
+```
 
-O bcrypt protege a senha.
-O JWT protege o acesso.
+The API runs at: `http://localhost:3000`
+
+### 2️⃣ Start the Frontend
+
+```bash
+cd demo/frontend
+open index.html
+```
+
+Or run using Live Server in VS Code.
+
+---
+
+## 📚 Documentation
+
+Each part of the system contains detailed documentation:
+
+- 👉 [Backend Documentation](./demo/backend/README.md)
+- 👉 [Frontend Demo Client](./demo/frontend/README.md)
+
+## 🎯 Purpose
+
+This project was built to demonstrate real-world authentication concepts, including:
+
+- JWT authentication
+- Access & Refresh token strategy
+- HttpOnly cookie security
+- Refresh token rotation
+- Session revocation
+- Client-side token handling
+
+Built as a practical reference for modern JWT authentication systems.
