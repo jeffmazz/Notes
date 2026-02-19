@@ -1,5 +1,3 @@
-# Secure JWT Authentication System
-
 # 🔐 Secure JWT Authentication System
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)
