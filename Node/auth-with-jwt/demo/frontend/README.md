@@ -1,6 +1,12 @@
-# Frontend – Auth With JWT
+# JWT Authentication Demo Client
 
-This is a simple frontend interface created to test authentication using:
+This frontend application is a simple client used to demonstrate and test the authentication flow implemented in the Secure JWT Authentication API.
+
+It simulates how a real application handles login, protected requests, automatic token refresh, and logout using short-lived access tokens and HttpOnly refresh cookies.
+
+⚠️ This client requires the backend API to be running locally.
+
+The client demonstrates:
 
 - Access Token (short-lived)
 - Refresh Token (stored in HttpOnly cookies)
@@ -9,17 +15,17 @@ This is a simple frontend interface created to test authentication using:
 
 ---
 
-## Features
+## 🚀 Features
 
 - Login with email and password
-- Store access token in memory
-- Access protected route using Bearer token
-- Refresh access token when expired
-- Logout clears refresh cookie
+- Access token stored in memory (not persisted)
+- Access protected route using Bearer authentication
+- Automatic access token refresh when expired
+- Logout invalidates session and clears refresh cookie
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - HTML
 - CSS
@@ -27,9 +33,9 @@ This is a simple frontend interface created to test authentication using:
 
 ---
 
-## How to Run
+## ▶️ Running Locally
 
-Open the file directly:
+Open the `index.html` file directly in your browser:
 
 ```bash
 open index.html
@@ -37,7 +43,7 @@ open index.html
 
 Or use Live Server on VS Code.
 
-## Authentication Flow
+## 🔐 Authentication Flow
 
 ### Login
 
@@ -60,7 +66,7 @@ fetch("/protected", {
 
 ### Refresh Token
 
-if access expires, frontend calls:
+When the access token expires, the frontend automatically calls:
 
 ```js
 fetch("/refresh", {
@@ -77,7 +83,3 @@ fetch("/logout", {
   credentials: "include",
 });
 ```
-
----
-
-Made with ❤️ for study purposes.
